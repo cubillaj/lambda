@@ -1,0 +1,33 @@
+service: my-pern-lambda-api
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  memorySize: 512
+  timeout: 10
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: ${env:DATABASE_URL}
+    JWT_SECRET: ${env:JWT_SECRET}
+
+package:
+  individually: false
+  patterns:
+    - '!src/**'                # Exclude TypeScript source files
+    - '!tsconfig.json'         # Exclude TS config
+    - '!README.md'
+    - '!prisma/schema.prisma'  # Exclude raw prisma schema if not needed at runtime
+    - '!node_modules/prisma/**' # Exclude Prisma CLI binaries (only keep @prisma/client)
+    - '!node_modules/@prisma/engines/**'
+    - dist/**                  # Include compiled JavaScript output
+    
+functions:
+  api:
+    handler: dist/lambda.handler
+    events:
+      - httpApi: '*'
+
+plugins:
+  - serverless-offline
